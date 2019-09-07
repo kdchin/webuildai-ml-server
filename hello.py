@@ -9,3 +9,6 @@ import pandas
 @app.route('/marco', method=['GET'])
 def marco():
     return 'polo'
+
+if __name__ == "__main__":
+    app.run()
