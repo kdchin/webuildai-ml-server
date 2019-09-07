@@ -6,7 +6,7 @@ import scipy
 import psycopg2
 import pandas
 
-@app.route('/marco', method=['GET'])
+@app.route('/marco', methods=['GET'])
 def marco():
     return 'polo'
 
