@@ -1,5 +1,6 @@
 from flask import Flask, request
 from flask_cors import cross_origin
+import ml_model_db
 
 app = Flask(__name__)
 
@@ -18,7 +19,12 @@ def marco():
 @cross_origin()
 def train():
     data = request.form['data']
-    return { "train": "some data", "received": data }
+    try:
+        response = ml_model_db.run_model(data)
+    except Exception as e:
+        return {"status": "Unsuccessful"}
+
+    return { "status": "OK", "received": data}
 
 @app.route('/evaluate', methods=['POST'])
 @cross_origin()
