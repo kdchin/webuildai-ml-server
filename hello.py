@@ -18,13 +18,13 @@ def marco():
 @cross_origin()
 def train():
     data = request.form['data']
-    return { "train": "some data", "received", data }
+    return { "train": "some data", "received": data }
 
 @app.route('/evaluate', methods=['POST'])
 @cross_origin()
 def evaluate():
     data = request.form['data']
-    return { "evaluate": "some data", "received", data }
+    return { "evaluate": "some data", "received": data }
 
 if __name__ == "__main__":
     app.run()
