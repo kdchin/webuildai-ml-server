@@ -30,7 +30,12 @@ def train():
 @cross_origin()
 def evaluate():
     data = request.form['data']
-    return { "evaluate": "some data", "received": data }
+    try:
+        response = ml_model_score.score_instances(data)
+    except Exception as e:
+        return {"status": "Unscuccessful"}
+
+    return { "status": "OK", "received": data }
 
 if __name__ == "__main__":
     app.run()
