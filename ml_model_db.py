@@ -96,7 +96,7 @@ def scale(feature, is_scale):
 
 def get_scenarios(connection, pid, pairwise_type, possible_values, is_scale):
     data = {}
-    data['part_id']=int(pid)
+    data['participant_id']=int(pid)
     data['type']=pairwise_type
 
     cursor = connection.cursor()
@@ -348,7 +348,7 @@ def split_train_test(compars, test_frac, feat_trans):
 
 def get_scenarios_json(data, is_scale=True):
     pid = int(data['participant_id'])
-    pairwise_type = data['request']
+    pairwise_type = data['request_type']
 
     all_samples = []
     imp_features = set()

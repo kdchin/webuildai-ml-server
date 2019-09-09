@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_cors import cross_origin
 import ml_model_db
+import json
 
 app = Flask(__name__)
 
@@ -15,16 +16,15 @@ import pandas
 def marco():
     return 'polo'
 
-@app.route('/train', methods=['POST'])
+@app.route('/train', methods=["GET", 'POST'])
 @cross_origin()
 def train():
-    data = request.form['data']
-    try:
-        response = ml_model_db.run_model(data)
-    except Exception as e:
-        return {"status": "Unsuccessful"}
-
-    return { "status": "OK", "received": data}
+    jsonData = request.get_json()
+    data = jsonData['data']
+    print("received: ", data['participant_id'], data['request_type'])
+    response = ml_model_db.run_model(data)
+    this_beta, soft_loss, num_correct, n_test = response
+    return { "status": "OK", "received": { 'weights': this_beta } }
 
 @app.route('/evaluate', methods=['POST'])
 @cross_origin()
@@ -38,4 +38,4 @@ def evaluate():
     return { "status": "OK", "received": data }
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
