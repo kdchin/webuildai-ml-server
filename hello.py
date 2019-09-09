@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_cors import cross_origin
 import ml_model_db
+from flask import jsonify
 import json
 
 app = Flask(__name__)
@@ -24,7 +25,8 @@ def train():
     print("received: ", data['participant_id'], data['request_type'])
     response = ml_model_db.run_model(data)
     this_beta, soft_loss, num_correct, n_test = response
-    return { "status": "OK", "received": { 'weights': this_beta } }
+
+    return jsonify({"status": "OK"})
 
 @app.route('/evaluate', methods=['POST'])
 @cross_origin()

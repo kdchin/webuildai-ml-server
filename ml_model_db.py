@@ -404,11 +404,13 @@ def get_scenarios_json(data, is_scale=True):
 
         all_samples.append([array_1, array_2, choice])
 
-    print("Number of Scenarios=" + str(scenario_counter))
+    print("Number of Scenarios=" + str(len(all_samples)))
     return all_samples, imp_features
 
-
 def run_model(data):
+    print("="*10)
+    print(data)
+    print("="*10)
     pid = int(data['participant_id'])
     pairwise_type = data['request_type']
     data_type = 'D'
@@ -417,7 +419,7 @@ def run_model(data):
     loss_fun = 'normal'
     num_iters = 100
     size_type = 'cardinalsizes'
-    test_frac = 0.15
+    test_frac = 0.5
 
     data, imp_features = get_scenarios_json(data, is_scale=True)
 
@@ -452,7 +454,6 @@ def run_model(data):
     print("PRINTING SHAPE OF EACH ROW")
     for x in compars:
         print(x.shape)
-    print("STOPPING...")
 
     compars = np.array(compars)
     print("Length of comparisons=" + str(len(compars)))
