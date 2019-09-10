@@ -15,6 +15,12 @@ import pandas.io.sql as sqlio
 
 get_local_path = lambda s: os.path.join(os.path.dirname(os.path.realpath(__file__)), s)
 
+def make_result_dirs():
+    dirs = ['RESULT', 'RESULT/betas', 'RESULT/correct_comps', 'RESULT/incorrect_comps']
+    for path in dirs:
+        if not os.path.exists(path):
+            os.makedirs(path)
+
 def connect():
     connection = None
     try:
@@ -407,10 +413,14 @@ def get_scenarios_json(data, is_scale=True):
     print("Number of Scenarios=" + str(len(all_samples)))
     return all_samples, imp_features
 
+
 def run_model(data):
     print("="*10)
     print(data)
     print("="*10)
+
+    make_result_dirs()
+
     pid = int(data['participant_id'])
     pairwise_type = data['request_type']
     data_type = 'D'
