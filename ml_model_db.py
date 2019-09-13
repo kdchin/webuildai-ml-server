@@ -423,6 +423,7 @@ def run_model(data):
 
     pid = int(data['participant_id'])
     pairwise_type = data['request_type']
+    fid = int(data['feedback_round'])
     data_type = 'D'
     normalize = 1
     k = 1
@@ -558,7 +559,7 @@ def run_model(data):
     print(filename)
 
     pickle.dump(this_beta,
-                open(get_local_path("RESULT/betas/Participant_" + str(filename) + "_BETA_Round1.pkl"),
+                open(get_local_path("RESULT/betas/Participant_" + str(filename) + "_BETA_Round"+ str(fid) + ".pkl"),
                      'wb'))
 
     return this_beta, soft_loss, num_correct, n_test
