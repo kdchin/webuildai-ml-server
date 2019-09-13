@@ -321,7 +321,7 @@ def score_instances(data):
     filename = str(pid) + "_" + str(pairwise_type)
 
     model = pickle.load(open(get_local_path(
-        'RESULT/betas/Participant_' + str(filename) + '_BETA_Round' + str(fid) + '.pkl','rb')))
+        'RESULT/betas/Participant_' + str(filename) + '_BETA_Round' + str(fid) + '.pkl'),'rb'))
 
     candidates, imp_features, candidate_ids = get_scenarios_json(data, is_scale=True)
 
