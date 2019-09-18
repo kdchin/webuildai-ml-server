@@ -17,7 +17,7 @@ app.config.update(
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-# migrate = Migrate(app, db)
+migrate = Migrate(app, db)
 
 from ml_model_db import run_model
 from ml_model_score import score_instances
