@@ -1,4 +1,4 @@
-from .hello import db
+from hello import db
 from sqlalchemy.dialects.postgresql import JSON
 
 class ModelWeights(db.Model):

@@ -12,7 +12,7 @@ import os
 import psycopg2
 import pandas.io.sql as sqlio
 
-from .models import ModelWeights
+from models import ModelWeights
 
 
 get_local_path = lambda s: os.path.join(os.path.dirname(os.path.realpath(__file__)), s)

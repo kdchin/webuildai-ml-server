@@ -19,8 +19,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 # migrate = Migrate(app, db)
 
-from .ml_model_db import run_model
-from .ml_model_score import score_instances
+from ml_model_db import run_model
+from ml_model_score import score_instances
 # from models import ModelWeights
 
 # @cross_origin(origins="https://webuild-ai.herokuapp.com/")

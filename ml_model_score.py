@@ -15,7 +15,7 @@ import datetime
 
 get_local_path = lambda s: os.path.join(os.path.dirname(os.path.realpath(__file__)), s)
 
-from .models import ModelWeights
+from models import ModelWeights
 
 def connect():
     connection = None
