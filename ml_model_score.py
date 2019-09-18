@@ -15,6 +15,7 @@ import datetime
 
 get_local_path = lambda s: os.path.join(os.path.dirname(os.path.realpath(__file__)), s)
 
+from .models import ModelWeights
 
 def connect():
     connection = None
@@ -320,8 +321,11 @@ def score_instances(data):
 
     filename = str(pid) + "_" + str(pairwise_type)
 
-    model = pickle.load(open(get_local_path(
-        'RESULT/betas/Participant_' + str(filename) + '_BETA_Round' + str(fid) + '.pkl'),'rb'))
+    # model = pickle.load(open(get_local_path(
+    #     'RESULT/betas/Participant_' + str(filename) + '_BETA_Round' + str(fid) + '.pkl'),'rb'))
+    # obj = session.query(ObjectRes).order_by(ObjectRes.id.desc()).first()
+    mw = ModelWeights.query.filter_by(participant_id=pid, feedback_round=fid, category=pairwise_type).order_by(ModelWeights.id.desc()).first()
+    model = np.array(json.loads(mw.weights)['weights'])
 
     candidates, imp_features, candidate_ids = get_scenarios_json(data, is_scale=True)
 

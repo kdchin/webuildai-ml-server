@@ -12,6 +12,8 @@ import os
 import psycopg2
 import pandas.io.sql as sqlio
 
+from .models import ModelWeights
+
 
 get_local_path = lambda s: os.path.join(os.path.dirname(os.path.realpath(__file__)), s)
 
@@ -414,7 +416,7 @@ def get_scenarios_json(data, is_scale=True):
     return all_samples, imp_features
 
 
-def run_model(data):
+def run_model(data, db):
     print("="*10)
     print(data)
     print("="*10)
@@ -554,13 +556,24 @@ def run_model(data):
     print("Soft LOSS=" + str(soft_loss))
     print("Accuracy=" + str(float(num_correct) / n_test))
 
-    #filename = inp_file.split("/")[::-1][0]
-    filename = str(pid)+"_"+str(pairwise_type)
-    print(filename)
+    weights_json = { 'weights': list(this_beta) }
 
-    pickle.dump(this_beta,
-                open(get_local_path("RESULT/betas/Participant_" + str(filename) + "_BETA_Round"+ str(fid) + ".pkl"),
-                     'wb'))
+    indata = ModelWeights(participant_id=pid, feedback_round=fid, category=pairwise_type, weights=json.dumps(weights_json))
+    print(indata)
+    try:
+        db.session.add(indata)
+        db.session.commit()
+    except Exception as e:
+        print("\n FAILED entry: {}\n".format(data))
+        print(e)
+
+    #filename = inp_file.split("/")[::-1][0]
+    # filename = str(pid)+"_"+str(pairwise_type)
+    # print(filename)
+
+    # pickle.dump(this_beta,
+    #             open(get_local_path("RESULT/betas/Participant_" + str(filename) + "_BETA_Round"+ str(fid) + ".pkl"),
+    #                  'wb'))
 
     return this_beta, soft_loss, num_correct, n_test
 
