@@ -21,7 +21,7 @@ db = SQLAlchemy(app)
 
 from ml_model_db import run_model
 from ml_model_score import score_instances
-# from models import ModelWeights
+from models import ModelWeights
 
 # @cross_origin(origins="https://webuild-ai.herokuapp.com/")
 @app.route('/marco', methods=['GET'])
