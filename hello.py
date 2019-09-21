@@ -12,7 +12,7 @@ app.config.update(
     DEBUG = True,
     CSRF_ENABLED = True,
     SECRET_KEY = os.environ.get("FLASK_SECRET_KEY" , "shrek-donkey-fiona"),
-    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL'],
+    SQLALCHEMY_DATABASE_URI = os.environ.get('FLASK_DATABASE_URL', os.environ.get('DATABASE_URL')),
 )
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -44,9 +44,9 @@ def evaluate():
     jsonData = request.get_json()
     data = jsonData['data']
     scores, ids = score_instances(data)
-    a = zip(list(scores), ids)
-    sortedIds = list(map(lambda pair: pair[1], sorted(a, key=lambda x: x[0], reverse=True)))
-    return { "status": "OK", "order": sortedIds }
+    a = zip(ids, list(scores))
+    sortedIds = list(map(lambda pair: pair[0], sorted(a, key=lambda x: x[1], reverse=True)))
+    return { "status": "OK", "order": sortedIds, "scores" : dict(a) }
 
 if __name__ == "__main__":
     app.run(debug=True)

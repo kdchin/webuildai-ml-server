@@ -126,7 +126,7 @@ def get_feature_info(connection):
 def get_candidates(connection, pid, category, feature_info, possible_values, is_scale):
     cursor = connection.cursor()
     query = """
-    SELECT id, participant_id, features FROM individual_scenarios WHERE participant_id=%s AND category='%s';         
+    SELECT id, participant_id, features FROM individual_scenarios WHERE participant_id=%s AND category='%s';
     """ % (str(pid), str(category))
 
     all_samples = []
