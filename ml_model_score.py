@@ -360,8 +360,10 @@ def score_instances(data):
         score = np.dot(model, k_altA)
         score_arr.append(score)
 
+    for i in range(len(candidate_ids)):
+        print(candidate_ids[i], score_arr[i])
+        
     return score_arr, candidate_ids
-
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Inputs.")
