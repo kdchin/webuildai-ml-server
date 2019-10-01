@@ -1,6 +1,9 @@
 from argparse import ArgumentParser
 import numpy as np
 from sys import exit
+import sys
+sys.append('./l2r_models')
+import svm_dtree, svm_learn2rank, utility_model
 import scipy
 import scipy.stats
 import itertools
@@ -13,7 +16,6 @@ import psycopg2
 import pandas.io.sql as sqlio
 
 from models import ModelWeights
-
 
 get_local_path = lambda s: os.path.join(os.path.dirname(os.path.realpath(__file__)), s)
 
@@ -101,193 +103,6 @@ def scale(feature, is_scale):
             exit(0)
 
     return mod_value
-
-def get_scenarios(connection, pid, pairwise_type, possible_values, is_scale):
-    data = {}
-    data['participant_id']=int(pid)
-    data['type']=pairwise_type
-
-    cursor = connection.cursor()
-
-    # This should be used.
-
-    query = """
-    SELECT participant_id, scenario_1, scenario_2, choice, reason, category 
-    FROM pairwise_comparisons a WHERE participant_id=%s AND category='%s'
-    """%(str(pid), str(pairwise_type))
-
-    '''
-    query = """
-    SELECT participant_id, scenario_1, scenario_2, choice, reason, category
-    FROM pairwise_comparisons WHERE participant_id=%s AND choice IS NOT NULL
-    """%(str(pid))
-    '''
-
-    cursor.execute(query)
-
-    data_arr = []
-    imp_features = set()
-
-    feature_array1 = []  # Values for feature array1
-    feature_array2 = []  # Values for feature array2
-
-    all_samples = []
-
-    scenario_counter = 0
-    for record in cursor:
-        scenario_counter+=1
-        scenarios = {}
-
-        scenario_1 = record[1]
-        scenario_2 = record[2]
-        choice = record[3]
-        reason = record[4]
-
-        cursor2 = connection.cursor()
-        query2 = '''
-                    SELECT a.group_id, a.feature_id, a.feature_value, 
-                    b.id AS featureId, b.name AS featureName, b.description AS description, b.category AS feat_category, 
-                    b.active AS active, b.company AS company, c.is_categorical AS categories, c.lower_bound as lb, 
-                    c.upper_bound as ub
-                    FROM scenarios a, features b, data_ranges c
-                    WHERE a.group_id=%s AND b.id = a.feature_id
-                    AND c.feature_id = a.feature_id;
-                    '''%(str(scenario_1))
-        cursor2.execute(query2)
-
-        scenario1_arr = []
-
-        for row in cursor2:
-            feature_obj = {}
-
-            feature_id = int(row[1])
-            feature_value = row[2]
-            feature_name = row[4]
-            feature_desc = row[5]
-            feature_category = row[6]
-            feature_active = row[7]
-            feature_company = row[8]
-            feature_type = row[9]
-            if(feature_type==True):
-                feature_type = "categorical"
-            elif(feature_type==False):
-                feature_type = "continuous"
-            feature_min = row[10]
-            feature_max = row[11]
-
-            feature_obj['feat_id'] = feature_id
-            feature_obj['feat_name'] = feature_name
-            feature_obj['feat_category'] = feature_category
-            feature_obj['feat_value'] = feature_value
-            feature_obj['feat_type'] = feature_type
-            if(feature_type=='categorical'):
-                f_poss_values = possible_values[feature_id]
-            else:
-                f_poss_values = []
-            feature_obj['possible_values'] = f_poss_values
-            feature_obj['feat_min'] = feature_min
-            feature_obj['feat_max'] = feature_max
-
-            scenario1_arr.append(feature_obj)
-            imp_features.add(feature_id)
-        scenarios['scenario_1'] = scenario1_arr
-
-        cursor3 = connection.cursor()
-        query3 = '''
-                    SELECT a.group_id, a.feature_id, a.feature_value, 
-                    b.id AS featureId, b.name AS featureName, b.description AS description, b.category AS feat_category, 
-                    b.active AS active, b.company AS company, c.is_categorical AS categories, c.lower_bound as lb, 
-                    c.upper_bound as ub
-                    FROM scenarios a, features b, data_ranges c
-                    WHERE a.group_id=%s AND b.id = a.feature_id
-                    AND c.feature_id = a.feature_id;
-                    ''' % (str(scenario_2))
-        cursor3.execute(query3)
-
-        scenario2_arr = []
-        for row in cursor3:
-            feature_obj = {}
-
-            feature_id = int(row[1])
-            feature_value = row[2]
-            feature_name = row[4]
-            feature_desc = row[5]
-            feature_category = row[6]
-            feature_active = row[7]
-            feature_company = row[8]
-            feature_type = row[9]
-            if (feature_type == True):
-                feature_type = "categorical"
-            elif (feature_type == False):
-                feature_type = "continuous"
-            feature_min = row[10]
-            feature_max = row[11]
-
-            feature_obj['feat_id'] = feature_id
-            feature_obj['feat_name'] = feature_name
-            feature_obj['feat_category'] = feature_category
-            feature_obj['feat_value'] = feature_value
-            feature_obj['feat_type'] = feature_type
-            if (feature_type == 'categorical'):
-                f_poss_values = possible_values[feature_id]
-            else:
-                f_poss_values = []
-            feature_obj['possible_values'] = f_poss_values
-            feature_obj['feat_min'] = feature_min
-            feature_obj['feat_max'] = feature_max
-
-            scenario2_arr.append(feature_obj)
-        scenarios['scenario_2'] = scenario2_arr
-        scenarios['choice'] = choice
-
-        data_arr.append(scenarios)
-
-        scenario_1 = scenario1_arr  # Features corresp. to option 1
-        scenario_2 = scenario2_arr  # Features corresp. to option 2
-
-        scenario_1 = sorted(scenario_1, key=lambda elem: elem["feat_id"])
-        scenario_2 = sorted(scenario_2, key=lambda elem: elem["feat_id"])
-
-        num_features1 = len(scenario_1)
-        num_features2 = len(scenario_2)
-
-        feat_ids1 = []  # Feature ids - to check if we are comparing apples and apples
-        feat_ids2 = []
-
-        array_1 = []  # Actual Values
-        array_2 = []
-
-        for f1 in scenario_1:
-            feat_ids1.append(f1['feat_id'])  # Makes sense.
-
-            modified_features = scale(f1, is_scale)
-
-            if (type(modified_features) is list):
-                for mf in modified_features:
-                    array_1.append(mf)
-            else:
-                array_1.append(modified_features)
-
-            imp_features.add(f1['feat_id'])
-        feature_array1.append(feat_ids1)
-
-        for f2 in scenario_2:
-            feat_ids2.append(f2['feat_id'])
-
-            modified_features = scale(f2, is_scale)
-            if (type(modified_features) is list):
-                for mf in modified_features:
-                    array_2.append(mf)
-            else:
-                array_2.append(modified_features)
-
-            imp_features.add(f2['feat_id'])
-        feature_array2.append(feat_ids2)
-
-        all_samples.append([array_1, array_2, choice])
-
-    print("Number of Scenarios="+str(scenario_counter))
-    return all_samples, imp_features
 
 def split_train_test(compars, test_frac, feat_trans):
     n = len(compars)
@@ -415,7 +230,6 @@ def get_scenarios_json(data, is_scale=True):
     print("Number of Scenarios=" + str(len(all_samples)))
     return all_samples, imp_features
 
-
 def run_model(data, db):
     print("="*10)
     print(data)
@@ -435,7 +249,9 @@ def run_model(data, db):
     test_frac = 0.5
 
     data, imp_features = get_scenarios_json(data, is_scale=True)
+    um_accuracy, um_model = utility_model.run_utility_model(data, loss_fun, nsplits=10, test_size=0.15, train_size=0.85)
 
+    '''
     lambda_reg = 1
     d = len(imp_features)
 
@@ -494,9 +310,6 @@ def run_model(data, db):
         this_beta = np.random.uniform(-0.001, 0.001,
                                       d_ext)  # Initialize parameter randomly	# Could instead use np.zeros(d), since it's a convex program
 
-        '''
-            REGULARIZATION
-        '''
 
         def normal_likeli(beta):  # negative of the log-likelihood
             # print(f'normal likeli: {-np.sum(scipy.stats.norm.logcdf(np.dot(this_diff, beta)))}')
@@ -555,8 +368,9 @@ def run_model(data, db):
 
     print("Soft LOSS=" + str(soft_loss))
     print("Accuracy=" + str(float(num_correct) / n_test))
+    '''
 
-    weights_json = { 'weights': list(this_beta) }
+    weights_json = {'weights': list(um_model)}
 
     indata = ModelWeights(participant_id=pid, feedback_round=fid, category=pairwise_type, weights=json.dumps(weights_json))
     print(indata)
