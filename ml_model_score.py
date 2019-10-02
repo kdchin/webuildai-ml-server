@@ -52,7 +52,7 @@ def convert_categorical_features(feature):
     value = feature['feat_value']
     possible_values = feature['possible_values']
 
-    if (("High" in possible_values) and ("Med" in possible_values) and ("Low" in possible_values)):
+    if (("High" in possible_values) and ("Medium" in possible_values) and ("Low" in possible_values)):
         if value == "High":
             mod_value = 1.0
         elif value == "Med":
