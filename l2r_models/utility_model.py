@@ -6,9 +6,12 @@ import scipy
 from scipy.optimize import minimize
 
 def run_utility_model(data, loss_fun, nsplits, test_size, train_size):
+    print("[TRAIN]Running Utility Model")
     d = len(data[0][0])
     k = 1
     lambda_reg = 1
+
+    print("[TRAIN]Number of Features="+str(len(d)))
 
     feat_trans = set([])
     feat_trans_dup = list(itertools.product(range(d + 1), repeat=k))
@@ -160,60 +163,13 @@ def run_utility_model(data, loss_fun, nsplits, test_size, train_size):
         FALSE_pos = {}
         FALSE_neg = {}
 
-        for j in range(n_test):
-            mean_util_0 = np.dot(this_beta, k_test_comps[j, 0, :])
-            mean_util_1 = np.dot(this_beta, k_test_comps[j, 1, :])
-
-            prob_0_beats_1 = scipy.stats.norm.cdf(mean_util_0 - mean_util_1, scale=2)
-            if (mean_util_0 > mean_util_1):
-                num_correct += 1
-
-            else:
-                diff = k_test_comps[j, 0, :] -  k_test_comps[j, 1, :]
-                print(mean_util_0, mean_util_1)
-                print("---"*30)
-
-            diff = k_test_comps[j, 0, :] - k_test_comps[j, 1, :]
-            pos_symbols = np.where(diff>0)[0]
-            neg_symbols = np.where(diff<0)[0]
-            print("PS="+str(pos_symbols))
-            print("NS="+str(neg_symbols))
-
-            if(mean_util_0>mean_util_1):
-                for p in pos_symbols:
-                    try:
-                        TRUE_pos[p] +=1
-                    except KeyError as e:
-                        TRUE_pos[p] = 1
-
-                for n in neg_symbols:
-                    try:
-                        TRUE_neg[n] +=1
-                    except KeyError as e:
-                        TRUE_neg[n] = 1
-            else:
-                for p in pos_symbols:
-                    try:
-                        FALSE_pos[p]+=1
-                    except KeyError as e:
-                        FALSE_pos[p] = 1
-
-                for n in neg_symbols:
-                    try:
-                        FALSE_neg[n]+=1
-                    except KeyError as e:
-                        FALSE_neg[n] = 1
-
         print("="*50)
-        #print(this_beta)
-        #print(TRUE_pos)
-        #print(TRUE_neg)
-        #print(FALSE_pos)
-        #print(FALSE_neg)
+        print("[TRAIN]Weight Feature Learnt=" + str(len(this_beta)))
         print("="*50)
 
         accuracy.append(float(num_correct)/n_test)
         print(accuracy)
         print("Number Correct="+str(num_correct)+ " OUT OF "+str(n_test))
 
+    print("[TRAIN] This Beta="+str(len(this_beta)))
     return accuracy, this_beta

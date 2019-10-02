@@ -1,9 +1,11 @@
 from argparse import ArgumentParser
 import numpy as np
 from sys import exit
+
 import sys
-# sys.append('./l2r_models')
-import l2r_models.svm_dtree, l2r_models.svm_learn2rank, l2r_models.utility_model
+sys.path.append('./l2r_models')
+import svm_dtree, svm_learn2rank, utility_model
+
 import scipy
 import scipy.stats
 import itertools
@@ -24,35 +26,6 @@ def make_result_dirs():
     for path in dirs:
         if not os.path.exists(path):
             os.makedirs(path)
-
-def connect():
-    connection = None
-    try:
-        connection = psycopg2.connect(user="mwbecker", host = "127.0.0.1", database="WeBuildAi_development")
-        print("Connection Successful")
-    except Exception:
-        print("Connection ERROR")
-        exit(0)
-
-    return connection
-
-def get_possible_feature_values(connection):
-    cursor = connection.cursor()
-    query = "SELECT * from categorical_data_options"
-    df = sqlio.read_sql_query(query, connection)
-
-    possible_values = {}
-
-    data_range_id_values = df['data_range_id'].values
-    option_values = df['option_value'].values
-
-    for i in range(len(option_values)):
-        try:
-            possible_values[int(data_range_id_values[i])].append(option_values[i])
-        except KeyError as e:
-            possible_values[int(data_range_id_values[i])] = [option_values[i]]
-
-    return possible_values
 
 def convert_categorical_features(feature):
     value = feature['feat_value']
@@ -249,7 +222,8 @@ def run_model(data, db):
     test_frac = 0.5
 
     data, imp_features = get_scenarios_json(data, is_scale=True)
-    um_accuracy, um_model = l2r_models.utility_model.run_utility_model(data, loss_fun, nsplits=10, test_size=0.15, train_size=0.85)
+    print("[TRAIN] IMP FEATURES="+str(len(imp_features)))
+    um_accuracy, um_model = utility_model.run_utility_model(data, loss_fun, nsplits=10, test_size=0.15, train_size=0.85)
 
     '''
     lambda_reg = 1
@@ -371,6 +345,7 @@ def run_model(data, db):
     '''
 
     weights_json = {'weights': list(um_model)}
+    print("[TRAIN] Weights Model="+str(len(um_model)))
 
     indata = ModelWeights(participant_id=pid, feedback_round=fid, category=pairwise_type, weights=json.dumps(weights_json))
     print(indata)
@@ -381,15 +356,7 @@ def run_model(data, db):
         print("\n FAILED entry: {}\n".format(data))
         print(e)
 
-    #filename = inp_file.split("/")[::-1][0]
-    # filename = str(pid)+"_"+str(pairwise_type)
-    # print(filename)
-
-    # pickle.dump(this_beta,
-    #             open(get_local_path("RESULT/betas/Participant_" + str(filename) + "_BETA_Round"+ str(fid) + ".pkl"),
-    #                  'wb'))
-
-    return um_model#, soft_loss, num_correct, n_test
+    return um_model
 
 def test(this_beta, k_test_comps, n_test, pid, loss_fun, size_type, test_frac):
     num_correct = 0

@@ -326,11 +326,14 @@ def score_instances(data):
     # obj = session.query(ObjectRes).order_by(ObjectRes.id.desc()).first()
     mw = ModelWeights.query.filter_by(participant_id=pid, feedback_round=fid, category=pairwise_type).order_by(ModelWeights.id.desc()).first()
     model = np.array(json.loads(mw.weights)['weights'])
+    print("[SCORE]Model Loaded.")
+    print("[SCORE]Model Shape="+str(model.shape))
 
     candidates, imp_features, candidate_ids = get_scenarios_json(data, is_scale=True)
 
     lambda_reg = 1
     d = len(imp_features)
+    print("[SCORE] Number of Features="+str(d))
 
     feat_trans = set([])
     feat_trans_dup = list(itertools.product(range(d + 1), repeat=k))
@@ -343,6 +346,7 @@ def score_instances(data):
     N = 1
     d_ext = len(feat_trans)
     learnt_beta = np.zeros((N, d_ext))
+    print("[SCORE] Learnt Beta Shape="+str(learnt_beta.shape))
 
     score_arr = []
     for i in range(len(candidates)):
@@ -360,9 +364,13 @@ def score_instances(data):
         score = np.dot(model, k_altA)
         score_arr.append(score)
 
+        print("[SCORE]score for:"+str(i)+" = "+str(score))
+
+    json_output = {}
     for i in range(len(candidate_ids)):
         print(candidate_ids[i], score_arr[i])
-        
+        json_output[candidate_ids[i]] = score_arr[i]
+
     return score_arr, candidate_ids
 
 if __name__ == '__main__':

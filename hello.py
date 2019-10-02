@@ -44,9 +44,9 @@ def evaluate():
     jsonData = request.get_json()
     data = jsonData['data']
     scores, ids = score_instances(data)
-    a = zip(ids, list(scores))
+    a = zip(ids, scores)
     sortedIds = list(map(lambda pair: pair[0], sorted(a, key=lambda x: x[1], reverse=True)))
-    return { "status": "OK", "order": sortedIds, "scores" : dict(a) }
+    return jsonify({"status": "OK", "order": sortedIds, "scores" : scores})
 
 if __name__ == "__main__":
     app.run(debug=True)
