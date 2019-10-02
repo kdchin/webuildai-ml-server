@@ -11,7 +11,7 @@ def run_utility_model(data, loss_fun, nsplits, test_size, train_size):
     k = 1
     lambda_reg = 1
 
-    print("[TRAIN]Number of Features="+str(len(d)))
+    print("[TRAIN]Number of Features="+str(d))
 
     feat_trans = set([])
     feat_trans_dup = list(itertools.product(range(d + 1), repeat=k))
