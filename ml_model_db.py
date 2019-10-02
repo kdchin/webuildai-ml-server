@@ -2,8 +2,8 @@ from argparse import ArgumentParser
 import numpy as np
 from sys import exit
 import sys
-sys.append('./l2r_models')
-import svm_dtree, svm_learn2rank, utility_model
+# sys.append('./l2r_models')
+import l2r_models.svm_dtree, l2r_models.svm_learn2rank, l2r_models.utility_model
 import scipy
 import scipy.stats
 import itertools
@@ -249,7 +249,7 @@ def run_model(data, db):
     test_frac = 0.5
 
     data, imp_features = get_scenarios_json(data, is_scale=True)
-    um_accuracy, um_model = utility_model.run_utility_model(data, loss_fun, nsplits=10, test_size=0.15, train_size=0.85)
+    um_accuracy, um_model = l2r_models.utility_model.run_utility_model(data, loss_fun, nsplits=10, test_size=0.15, train_size=0.85)
 
     '''
     lambda_reg = 1
@@ -389,7 +389,7 @@ def run_model(data, db):
     #             open(get_local_path("RESULT/betas/Participant_" + str(filename) + "_BETA_Round"+ str(fid) + ".pkl"),
     #                  'wb'))
 
-    return this_beta, soft_loss, num_correct, n_test
+    return um_model#, soft_loss, num_correct, n_test
 
 def test(this_beta, k_test_comps, n_test, pid, loss_fun, size_type, test_frac):
     num_correct = 0

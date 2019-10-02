@@ -35,8 +35,8 @@ def train():
     jsonData = request.get_json()
     data = jsonData['data']
     response = run_model(data, db)
-    this_beta, soft_loss, num_correct, n_test = response
-    return jsonify({"status": "OK", "weights": list(this_beta)})
+    um_model = response
+    return jsonify({"status": "OK", "weights": list(um_model)})
 
 @app.route('/evaluate', methods=['POST'])
 @cross_origin()
