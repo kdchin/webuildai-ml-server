@@ -46,6 +46,7 @@ def evaluate():
     scores, ids = score_instances(data)
     a = zip(ids, scores)
     sortedIds = list(map(lambda pair: pair[0], sorted(a, key=lambda x: x[1], reverse=True)))
+    scores = list(map(lambda score: round(score, 2), scores))
     return jsonify({"status": "OK", "order": sortedIds, "scores" : scores})
 
 if __name__ == "__main__":
