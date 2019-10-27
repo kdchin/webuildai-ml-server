@@ -44,6 +44,9 @@ def run_utility_model(data, loss_fun, nsplits, test_size, train_size):
         train_comps = compars[train_index,]
         test_comps = compars[test_index,]
 
+        print("[TRAIN] Length of Train="+str(len(train_comps)))
+        print("[TRAIN] Length of Test=" + str(len(test_comps)))
+
         k_train_comps = []
         k_test_comps = []
 
@@ -163,6 +166,48 @@ def run_utility_model(data, loss_fun, nsplits, test_size, train_size):
         FALSE_pos = {}
         FALSE_neg = {}
 
+        for j in range(n_test):
+            mean_util_0 = np.dot(this_beta, k_test_comps[j, 0, :])
+            mean_util_1 = np.dot(this_beta, k_test_comps[j, 1, :])
+
+            prob_0_beats_1 = scipy.stats.norm.cdf(mean_util_0 - mean_util_1, scale=2)
+            if (mean_util_0 > mean_util_1):
+                num_correct += 1
+
+            else:
+                diff = k_test_comps[j, 0, :] -  k_test_comps[j, 1, :]
+                print(mean_util_0, mean_util_1)
+                print("---"*30)
+
+            diff = k_test_comps[j, 0, :] - k_test_comps[j, 1, :]
+            pos_symbols = np.where(diff>0)[0]
+            neg_symbols = np.where(diff<0)[0]
+
+            if(mean_util_0>mean_util_1):
+                for p in pos_symbols:
+                    try:
+                        TRUE_pos[p] +=1
+                    except KeyError as e:
+                        TRUE_pos[p] = 1
+
+                for n in neg_symbols:
+                    try:
+                        TRUE_neg[n] +=1
+                    except KeyError as e:
+                        TRUE_neg[n] = 1
+            else:
+                for p in pos_symbols:
+                    try:
+                        FALSE_pos[p]+=1
+                    except KeyError as e:
+                        FALSE_pos[p] = 1
+
+                for n in neg_symbols:
+                    try:
+                        FALSE_neg[n]+=1
+                    except KeyError as e:
+                        FALSE_neg[n] = 1
+                        
         print("="*50)
         print("[TRAIN]Weight Feature Learnt=" + str(len(this_beta)))
         print("="*50)
